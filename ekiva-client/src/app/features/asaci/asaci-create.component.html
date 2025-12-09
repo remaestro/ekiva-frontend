@@ -1,0 +1,237 @@
+<div class="asaci-create-container">
+  <div class="page-header">
+    <h1>Créer une Attestation ASACI</h1>
+    <p class="subtitle">Générer une nouvelle attestation d'assurance automobile</p>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">
+    <i class="icon-check"></i>
+    {{ successMessage }}
+  </div>
+
+  <div class="alert alert-error" *ngIf="error">
+    <i class="icon-alert"></i>
+    {{ error }}
+  </div>
+
+  <form [formGroup]="certificateForm" (ngSubmit)="onSubmit()" class="certificate-form">
+    
+    <!-- Section: Informations Police -->
+    <div class="form-section">
+      <h2>Informations sur la Police</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="policyNumber">Numéro de Police *</label>
+          <input 
+            type="text" 
+            id="policyNumber" 
+            formControlName="policyNumber"
+            [class.invalid]="isFieldInvalid('policyNumber')"
+            placeholder="Ex: POL-2025-001">
+          <span class="error-message" *ngIf="isFieldInvalid('policyNumber')">
+            {{ getFieldError('policyNumber') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="coverageType">Type de Couverture *</label>
+          <select id="coverageType" formControlName="coverageType">
+            <option value="ThirdParty">Responsabilité Civile (RC)</option>
+            <option value="Comprehensive">Tous Risques</option>
+            <option value="ThirdPartyFireTheft">RC + Vol et Incendie</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Informations Assuré -->
+    <div class="form-section">
+      <h2>Informations sur l'Assuré</h2>
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label for="policyHolderName">Nom Complet de l'Assuré *</label>
+          <input 
+            type="text" 
+            id="policyHolderName" 
+            formControlName="policyHolderName"
+            [class.invalid]="isFieldInvalid('policyHolderName')"
+            placeholder="Ex: KOUASSI Jean">
+          <span class="error-message" *ngIf="isFieldInvalid('policyHolderName')">
+            {{ getFieldError('policyHolderName') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label for="policyHolderAddress">Adresse de l'Assuré *</label>
+          <textarea 
+            id="policyHolderAddress" 
+            formControlName="policyHolderAddress"
+            [class.invalid]="isFieldInvalid('policyHolderAddress')"
+            rows="3"
+            placeholder="Ex: Cocody Angré 8ème Tranche, Abidjan"></textarea>
+          <span class="error-message" *ngIf="isFieldInvalid('policyHolderAddress')">
+            {{ getFieldError('policyHolderAddress') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Informations Véhicule -->
+    <div class="form-section">
+      <h2>Informations sur le Véhicule</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="vehicleRegistration">Immatriculation *</label>
+          <input 
+            type="text" 
+            id="vehicleRegistration" 
+            formControlName="vehicleRegistration"
+            [class.invalid]="isFieldInvalid('vehicleRegistration')"
+            placeholder="Ex: AB-1234-CI"
+            style="text-transform: uppercase;">
+          <span class="error-message" *ngIf="isFieldInvalid('vehicleRegistration')">
+            {{ getFieldError('vehicleRegistration') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="chassisNumber">Numéro de Châssis *</label>
+          <input 
+            type="text" 
+            id="chassisNumber" 
+            formControlName="chassisNumber"
+            [class.invalid]="isFieldInvalid('chassisNumber')"
+            placeholder="Ex: VIN123456789">
+          <span class="error-message" *ngIf="isFieldInvalid('chassisNumber')">
+            {{ getFieldError('chassisNumber') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="vehicleMake">Marque *</label>
+          <input 
+            type="text" 
+            id="vehicleMake" 
+            formControlName="vehicleMake"
+            [class.invalid]="isFieldInvalid('vehicleMake')"
+            placeholder="Ex: Toyota">
+          <span class="error-message" *ngIf="isFieldInvalid('vehicleMake')">
+            {{ getFieldError('vehicleMake') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="vehicleModel">Modèle *</label>
+          <input 
+            type="text" 
+            id="vehicleModel" 
+            formControlName="vehicleModel"
+            [class.invalid]="isFieldInvalid('vehicleModel')"
+            placeholder="Ex: Corolla">
+          <span class="error-message" *ngIf="isFieldInvalid('vehicleModel')">
+            {{ getFieldError('vehicleModel') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="vehicleYear">Année *</label>
+          <input 
+            type="number" 
+            id="vehicleYear" 
+            formControlName="vehicleYear"
+            [class.invalid]="isFieldInvalid('vehicleYear')"
+            placeholder="Ex: 2023"
+            min="1900"
+            [max]="maxYear">
+          <span class="error-message" *ngIf="isFieldInvalid('vehicleYear')">
+            {{ getFieldError('vehicleYear') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Période de Couverture -->
+    <div class="form-section">
+      <h2>Période de Couverture</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="effectiveDate">Date de Début *</label>
+          <input 
+            type="date" 
+            id="effectiveDate" 
+            formControlName="effectiveDate"
+            [class.invalid]="isFieldInvalid('effectiveDate')">
+          <span class="error-message" *ngIf="isFieldInvalid('effectiveDate')">
+            {{ getFieldError('effectiveDate') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="expiryDate">Date d'Expiration *</label>
+          <input 
+            type="date" 
+            id="expiryDate" 
+            formControlName="expiryDate"
+            [class.invalid]="isFieldInvalid('expiryDate')">
+          <span class="error-message" *ngIf="isFieldInvalid('expiryDate')">
+            {{ getFieldError('expiryDate') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Compagnie d'Assurance -->
+    <div class="form-section">
+      <h2>Compagnie d'Assurance</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="insuranceCompanyName">Nom de la Compagnie *</label>
+          <input 
+            type="text" 
+            id="insuranceCompanyName" 
+            formControlName="insuranceCompanyName"
+            [class.invalid]="isFieldInvalid('insuranceCompanyName')"
+            placeholder="Ex: NSIA Assurances">
+          <span class="error-message" *ngIf="isFieldInvalid('insuranceCompanyName')">
+            {{ getFieldError('insuranceCompanyName') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="insuranceCompanyCode">Code Compagnie *</label>
+          <input 
+            type="text" 
+            id="insuranceCompanyCode" 
+            formControlName="insuranceCompanyCode"
+            [class.invalid]="isFieldInvalid('insuranceCompanyCode')"
+            placeholder="Ex: NSIA">
+          <span class="error-message" *ngIf="isFieldInvalid('insuranceCompanyCode')">
+            {{ getFieldError('insuranceCompanyCode') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="onCancel()"
+        [disabled]="loading">
+        Annuler
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        [disabled]="loading || certificateForm.invalid">
+        <span *ngIf="!loading">Créer l'Attestation</span>
+        <span *ngIf="loading">Création en cours...</span>
+      </button>
+    </div>
+  </form>
+</div>

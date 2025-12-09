@@ -1,0 +1,513 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Nouveau Devis Automobile</h1>
+    <p class="mt-2 text-sm text-gray-600">
+      Créez un devis d'assurance automobile en quelques étapes simples
+    </p>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="mb-8">
+    <nav aria-label="Progress">
+      <ol class="flex items-center justify-between">
+        @for (step of [1, 2, 3, 4, 5]; track step) {
+          <li class="relative" [class.flex-1]="step < 5">
+            <div class="flex items-center">
+              <div class="relative flex items-center justify-center">
+                <div 
+                  class="h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all"
+                  [class.bg-primary-600]="currentStep() >= step"
+                  [class.text-white]="currentStep() >= step"
+                  [class.bg-gray-200]="currentStep() < step"
+                  [class.text-gray-600]="currentStep() < step">
+                  {{ step }}
+                </div>
+                @if (step < 5) {
+                  <div 
+                    class="absolute left-full h-0.5 w-full transition-all"
+                    [class.bg-primary-600]="currentStep() > step"
+                    [class.bg-gray-200]="currentStep() <= step">
+                  </div>
+                }
+              </div>
+              <div class="ml-3 text-xs font-medium">
+                @if (step === 1) { Client & Produit }
+                @if (step === 2) { Période }
+                @if (step === 3) { Véhicule }
+                @if (step === 4) { Garanties }
+                @if (step === 5) { Résumé }
+              </div>
+            </div>
+          </li>
+        }
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Error Message -->
+  @if (errorMessage()) {
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-red-800">{{ errorMessage() }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Form -->
+  <form [formGroup]="quoteForm" class="bg-white shadow-lg rounded-lg p-6 md:p-8">
+    
+    <!-- Step 1: Client & Product -->
+    @if (currentStep() === 1) {
+      <div class="space-y-6">
+        <h2 class="text-xl font-semibold text-gray-900">Client et Produit</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Client -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Client <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="clientId" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Sélectionnez un client</option>
+              @for (client of clients(); track client.id) {
+                <option [value]="client.id">{{ client.fullName || client.companyName }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Product -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Produit d'assurance <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="motorProductId" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Sélectionnez un produit</option>
+              @for (product of motorProducts(); track product.id) {
+                <option [value]="product.id">{{ product.productName }}</option>
+              }
+            </select>
+            @if (quoteForm.get('motorProductId')?.value) {
+              <p class="mt-1 text-xs text-gray-500">
+                {{ getSelectedProductDescription() }}
+              </p>
+            }
+          </div>
+
+          <!-- Distributor (Optional) -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Distributeur (Optionnel)
+            </label>
+            <input type="text" formControlName="distributorId" 
+                   placeholder="ID du distributeur"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Step 2: Period -->
+    @if (currentStep() === 2) {
+      <div class="space-y-6">
+        <h2 class="text-xl font-semibold text-gray-900">Période de Couverture</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Start Date -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Date de début <span class="text-red-500">*</span>
+            </label>
+            <input type="date" formControlName="policyStartDate" 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+
+          <!-- Duration -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Durée (mois) <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="durationMonths" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option [value]="1">1 mois</option>
+              <option [value]="3">3 mois</option>
+              <option [value]="6">6 mois</option>
+              <option [value]="9">9 mois</option>
+              <option [value]="12">12 mois</option>
+            </select>
+          </div>
+
+          <!-- End Date (Auto-calculated) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Date de fin <span class="text-red-500">*</span>
+            </label>
+            <input type="date" formControlName="policyEndDate" 
+                   readonly
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Step 3: Vehicle -->
+    @if (currentStep() === 3) {
+      <div class="space-y-6">
+        <h2 class="text-xl font-semibold text-gray-900">Informations du Véhicule</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Category -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Catégorie <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="vehicleCategoryId" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Sélectionnez une catégorie</option>
+              @for (category of vehicleCategories(); track category.id) {
+                <option [value]="category.id">{{ category.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Make -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Marque <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="vehicleMakeId" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Sélectionnez une marque</option>
+              @for (make of vehicleMakes(); track make.id) {
+                <option [value]="make.id">{{ make.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Model -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Modèle <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="vehicleModelId" 
+                    [disabled]="!quoteForm.get('vehicleMakeId')?.value"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100">
+              <option value="">Sélectionnez un modèle</option>
+              @for (model of vehicleModels(); track model.id) {
+                <option [value]="model.id">{{ model.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Registration Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Immatriculation <span class="text-red-500">*</span>
+            </label>
+            <input type="text" formControlName="registrationNumber" 
+                   placeholder="Ex: AA-1234-BB"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent uppercase">
+          </div>
+
+          <!-- Chassis Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Numéro de châssis <span class="text-red-500">*</span>
+            </label>
+            <input type="text" formControlName="chassisNumber" 
+                   placeholder="Numéro de châssis"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+
+          <!-- Year -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Année de fabrication <span class="text-red-500">*</span>
+            </label>
+            <input type="number" formControlName="yearOfManufacture" 
+                   min="1990" [max]="currentYear"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+
+          <!-- Horsepower -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Puissance fiscale (CV) <span class="text-red-500">*</span>
+            </label>
+            <input type="number" formControlName="horsepower" 
+                   min="4" max="30" placeholder="Ex: 7"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+
+          <!-- Fuel Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Type de carburant <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="fuelType" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="Essence">Essence</option>
+              <option value="Diesel">Diesel</option>
+            </select>
+          </div>
+
+          <!-- Vehicle Value -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Valeur du véhicule (FCFA) <span class="text-red-500">*</span>
+            </label>
+            <input type="number" formControlName="vehicleValue" 
+                   min="1000000" step="100000" placeholder="Ex: 15000000"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Step 4: Coverages & Discounts -->
+    @if (currentStep() === 4) {
+      <div class="space-y-6">
+        <h2 class="text-xl font-semibold text-gray-900">Garanties et Remises</h2>
+        
+        <!-- Coverages -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-700 mb-4">
+            Sélectionnez les garanties <span class="text-red-500">*</span>
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (coverage of motorCoverages(); track coverage.id) {
+              <div class="relative flex items-start p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                   [class.border-primary-500]="isCoverageSelected(coverage.id)"
+                   [class.bg-primary-50]="isCoverageSelected(coverage.id)">
+                <div class="flex items-center h-5">
+                  <input 
+                    type="checkbox"
+                    [id]="'coverage-' + coverage.id"
+                    [checked]="isCoverageSelected(coverage.id)"
+                    [disabled]="isCoverageMandatory(coverage)"
+                    (change)="onCoverageToggle(coverage.id, $event)"
+                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                </div>
+                <div class="ml-3 text-sm flex-1">
+                  <label [for]="'coverage-' + coverage.id" class="font-medium text-gray-900 cursor-pointer">
+                    Section {{ coverage.sectionLetter }} - {{ coverage.coverageName }}
+                    @if (isCoverageMandatory(coverage)) {
+                      <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                        Obligatoire
+                      </span>
+                    }
+                  </label>
+                  <p class="text-gray-500 text-xs mt-1">{{ coverage.description }}</p>
+                  @if (coverage.fixedPremium > 0) {
+                    <p class="text-primary-600 text-xs font-semibold mt-1">
+                      Prime fixe: {{ formatCurrency(coverage.fixedPremium) }}
+                    </p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Discounts -->
+        <div class="border-t pt-6">
+          <h3 class="text-sm font-medium text-gray-700 mb-4">Remises</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Professional Discount -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Remise professionnelle (%)
+              </label>
+              <input type="number" formControlName="professionalDiscountPercent" 
+                     min="0" max="20" step="0.5"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <p class="mt-1 text-xs text-gray-500">Maximum 20%</p>
+            </div>
+
+            <!-- Commercial Discount -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Remise commerciale (%)
+              </label>
+              <input type="number" formControlName="commercialDiscountPercent" 
+                     min="0" max="10" step="0.5"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <p class="mt-1 text-xs text-gray-500">Maximum 10%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Step 5: Summary & Premium -->
+    @if (currentStep() === 5) {
+      <div class="space-y-6">
+        <h2 class="text-xl font-semibold text-gray-900">Résumé et Calcul de Prime</h2>
+        
+        <!-- Currency & Notes -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Devise <span class="text-red-500">*</span>
+            </label>
+            <select formControlName="currencyId" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              @for (currency of currencies(); track currency.id) {
+                <option [value]="currency.id">{{ currency.code }} - {{ currency.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Notes (Optionnel)
+          </label>
+          <textarea formControlName="notes" 
+                    rows="3"
+                    placeholder="Ajoutez des notes pour ce devis..."
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </textarea>
+        </div>
+
+        <!-- Premium Calculation Result -->
+        @if (isCalculating()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <p class="ml-4 text-gray-600">Calcul de la prime en cours...</p>
+          </div>
+        }
+
+        @if (premiumCalculation() && !isCalculating()) {
+          <div class="bg-gradient-to-r from-primary-50 to-primary-100 rounded-lg p-6 border-2 border-primary-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Détail de la Prime</h3>
+            
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-700">Prime de base</span>
+                <span class="font-medium">{{ formatCurrency(premiumCalculation()!.basePremium) }}</span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-gray-700">Prime des sections</span>
+                <span class="font-medium">{{ formatCurrency(premiumCalculation()!.sectionsPremium) }}</span>
+              </div>
+              
+              <div class="flex justify-between text-gray-600">
+                <span>Sous-total</span>
+                <span>{{ formatCurrency(premiumCalculation()!.subtotal) }}</span>
+              </div>
+              
+              @if (premiumCalculation()!.totalDiscount > 0) {
+                <div class="flex justify-between text-green-600">
+                  <span>Remise totale</span>
+                  <span>- {{ formatCurrency(premiumCalculation()!.totalDiscount) }}</span>
+                </div>
+              }
+              
+              @if (premiumCalculation()!.shortTermCoefficient < 1) {
+                <div class="flex justify-between text-gray-600">
+                  <span>Coefficient court terme (×{{ premiumCalculation()!.shortTermCoefficient }})</span>
+                  <span>{{ formatCurrency(premiumCalculation()!.netPremium) }}</span>
+                </div>
+              }
+              
+              <div class="border-t pt-3 flex justify-between">
+                <span class="text-gray-700">Prime nette</span>
+                <span class="font-semibold">{{ formatCurrency(premiumCalculation()!.netPremium) }}</span>
+              </div>
+              
+              <div class="flex justify-between text-gray-600">
+                <span>Taxes (14.5%)</span>
+                <span>{{ formatCurrency(premiumCalculation()!.taxAmount) }}</span>
+              </div>
+              
+              <div class="flex justify-between text-gray-600">
+                <span>Frais accessoires</span>
+                <span>{{ formatCurrency(premiumCalculation()!.policyCostAmount) }}</span>
+              </div>
+              
+              <div class="border-t-2 border-primary-300 pt-3 flex justify-between">
+                <span class="text-lg font-bold text-gray-900">Prime Totale</span>
+                <span class="text-2xl font-bold text-primary-600">
+                  {{ formatCurrency(premiumCalculation()!.totalPremium) }}
+                </span>
+              </div>
+              
+              @if (premiumCalculation()!.commissionAmount > 0) {
+                <div class="border-t pt-3 flex justify-between text-gray-500 text-xs">
+                  <span>Commission ({{ premiumCalculation()!.commissionRate }}%)</span>
+                  <span>{{ formatCurrency(premiumCalculation()!.commissionAmount) }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Coverage Details -->
+            @if (premiumCalculation()!.coverageDetails.length > 0) {
+              <div class="mt-6 pt-6 border-t border-primary-200">
+                <h4 class="text-sm font-semibold text-gray-900 mb-3">Détail des garanties</h4>
+                <div class="space-y-2">
+                  @for (coverage of premiumCalculation()!.coverageDetails; track coverage.coverageId) {
+                    <div class="flex justify-between text-xs text-gray-600">
+                      <span>{{ coverage.coverageName }}</span>
+                      <span class="font-medium">{{ formatCurrency(coverage.premiumAmount) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Navigation Buttons -->
+    <div class="mt-8 flex justify-between items-center pt-6 border-t">
+      <button 
+        type="button"
+        (click)="prevStep()"
+        [disabled]="currentStep() === 1"
+        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        Précédent
+      </button>
+
+      <div class="text-sm text-gray-500">
+        Étape {{ currentStep() }} sur {{ totalSteps }}
+      </div>
+
+      @if (currentStep() < totalSteps) {
+        <button 
+          type="button"
+          (click)="nextStep()"
+          class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+          Suivant
+        </button>
+      } @else {
+        <button 
+          type="button"
+          (click)="submitQuote()"
+          [disabled]="isSubmitting() || !quoteForm.valid"
+          class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center">
+          @if (isSubmitting()) {
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Création en cours...
+          } @else {
+            Créer le Devis
+          }
+        </button>
+      }
+    </div>
+  </form>
+</div>

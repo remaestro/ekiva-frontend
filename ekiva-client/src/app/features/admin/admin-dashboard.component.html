@@ -1,0 +1,257 @@
+<div class="admin-dashboard p-6 bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Dashboard Administrateur</h1>
+      <p class="text-gray-600 mt-1">Vue d'ensemble des statistiques et KPIs</p>
+    </div>
+    <button 
+      (click)="refreshStats()"
+      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+      [disabled]="isLoading">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-12">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <p class="mt-4 text-gray-600">Chargement des statistiques...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <p class="text-red-700">{{ error }}</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="stats && !isLoading" class="space-y-6">
+    
+    <!-- KPIs Section - Policies -->
+    <section>
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">📄 Polices d'Assurance</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div class="text-sm text-gray-600 mb-1">Total Polices</div>
+          <div class="text-2xl font-bold text-gray-800">{{ formatNumber(stats.policies.totalPolicies) }}</div>
+          <div class="mt-2 flex items-center" [ngClass]="getGrowthClass(stats.policies.growthRate)">
+            <span class="text-lg mr-1">{{ getGrowthIcon(stats.policies.growthRate) }}</span>
+            <span class="text-sm">{{ formatPercent(stats.policies.growthRate) }}</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+          <div class="text-sm text-gray-600 mb-1">Polices Actives</div>
+          <div class="text-2xl font-bold text-green-600">{{ formatNumber(stats.policies.activePolicies) }}</div>
+          <div class="text-sm text-gray-500 mt-2">
+            {{ formatPercent((stats.policies.activePolicies / stats.policies.totalPolicies) * 100) }} du total
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+          <div class="text-sm text-gray-600 mb-1">En Attente</div>
+          <div class="text-2xl font-bold text-yellow-600">{{ formatNumber(stats.policies.pendingPolicies) }}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+          <div class="text-sm text-gray-600 mb-1">Expirées</div>
+          <div class="text-2xl font-bold text-orange-600">{{ formatNumber(stats.policies.expiredPolicies) }}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+          <div class="text-sm text-gray-600 mb-1">Annulées</div>
+          <div class="text-2xl font-bold text-red-600">{{ formatNumber(stats.policies.cancelledPolicies) }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPIs Section - Revenue -->
+    <section>
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">💰 Revenus</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+          <div class="text-sm text-gray-600 mb-1">Revenu Total</div>
+          <div class="text-2xl font-bold text-purple-600">{{ formatCurrency(stats.revenue.totalRevenue) }}</div>
+          <div class="mt-2 flex items-center" [ngClass]="getGrowthClass(stats.revenue.growthRate)">
+            <span class="text-lg mr-1">{{ getGrowthIcon(stats.revenue.growthRate) }}</span>
+            <span class="text-sm">{{ formatPercent(stats.revenue.growthRate) }}</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div class="text-sm text-gray-600 mb-1">Revenu ce Mois</div>
+          <div class="text-2xl font-bold text-blue-600">{{ formatCurrency(stats.revenue.revenueThisMonth) }}</div>
+          <div class="text-sm text-gray-500 mt-2">vs {{ formatCurrency(stats.revenue.revenueLastMonth) }} mois dernier</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
+          <div class="text-sm text-gray-600 mb-1">Commissions</div>
+          <div class="text-2xl font-bold text-indigo-600">{{ formatCurrency(stats.revenue.totalCommissions) }}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-teal-500">
+          <div class="text-sm text-gray-600 mb-1">Revenu Net</div>
+          <div class="text-2xl font-bold text-teal-600">{{ formatCurrency(stats.revenue.netRevenue) }}</div>
+          <div class="text-sm text-gray-500 mt-2">Après commissions et taxes</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPIs Section - Clients & Distributors -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Clients -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">👥 Clients</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-white rounded-lg shadow p-6 border-l-4 border-cyan-500">
+            <div class="text-sm text-gray-600 mb-1">Total Clients</div>
+            <div class="text-2xl font-bold text-cyan-600">{{ formatNumber(stats.clients.totalClients) }}</div>
+            <div class="mt-2 flex items-center" [ngClass]="getGrowthClass(stats.clients.growthRate)">
+              <span class="text-lg mr-1">{{ getGrowthIcon(stats.clients.growthRate) }}</span>
+              <span class="text-sm">{{ formatPercent(stats.clients.growthRate) }}</span>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <div class="text-sm text-gray-600 mb-1">Nouveaux ce Mois</div>
+            <div class="text-2xl font-bold text-green-600">{{ formatNumber(stats.clients.newClientsThisMonth) }}</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="text-sm text-gray-600 mb-1">Particuliers</div>
+            <div class="text-xl font-bold text-gray-700">{{ formatNumber(stats.clients.individualClients) }}</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="text-sm text-gray-600 mb-1">Entreprises</div>
+            <div class="text-xl font-bold text-gray-700">{{ formatNumber(stats.clients.corporateClients) }}</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Distributors -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">🤝 Distributeurs</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+            <div class="text-sm text-gray-600 mb-1">Total Distributeurs</div>
+            <div class="text-2xl font-bold text-orange-600">{{ formatNumber(stats.distributors.totalDistributors) }}</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <div class="text-sm text-gray-600 mb-1">Actifs</div>
+            <div class="text-2xl font-bold text-green-600">{{ formatNumber(stats.distributors.activeDistributors) }}</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="text-sm text-gray-600 mb-1">Agents Internes</div>
+            <div class="text-xl font-bold text-gray-700">{{ formatNumber(stats.distributors.internalAgents) }}</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="text-sm text-gray-600 mb-1">Courtiers</div>
+            <div class="text-xl font-bold text-gray-700">{{ formatNumber(stats.distributors.brokers) }}</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- KPIs Section - Claims & Certificates -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Claims -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">⚠️ Sinistres</h2>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="border-l-4 border-blue-500 pl-4">
+              <div class="text-sm text-gray-600">Total Sinistres</div>
+              <div class="text-2xl font-bold text-gray-800">{{ formatNumber(stats.claims.totalClaims) }}</div>
+            </div>
+            <div class="border-l-4 border-yellow-500 pl-4">
+              <div class="text-sm text-gray-600">En Attente</div>
+              <div class="text-2xl font-bold text-yellow-600">{{ formatNumber(stats.claims.pendingClaims) }}</div>
+            </div>
+            <div class="border-l-4 border-green-500 pl-4">
+              <div class="text-sm text-gray-600">Approuvés</div>
+              <div class="text-2xl font-bold text-green-600">{{ formatNumber(stats.claims.approvedClaims) }}</div>
+            </div>
+            <div class="border-l-4 border-red-500 pl-4">
+              <div class="text-sm text-gray-600">Rejetés</div>
+              <div class="text-2xl font-bold text-red-600">{{ formatNumber(stats.claims.rejectedClaims) }}</div>
+            </div>
+          </div>
+          <div class="mt-6 pt-6 border-t">
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="text-sm text-gray-600">Montant Total</div>
+                <div class="text-lg font-bold text-gray-800">{{ formatCurrency(stats.claims.totalClaimAmount) }}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-gray-600">Montant Payé</div>
+                <div class="text-lg font-bold text-green-600">{{ formatCurrency(stats.claims.paidClaimAmount) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ASACI Certificates -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Attestations ASACI</h2>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="border-l-4 border-blue-500 pl-4">
+              <div class="text-sm text-gray-600">Total</div>
+              <div class="text-2xl font-bold text-gray-800">{{ formatNumber(stats.certificates.totalCertificates) }}</div>
+            </div>
+            <div class="border-l-4 border-green-500 pl-4">
+              <div class="text-sm text-gray-600">Actives</div>
+              <div class="text-2xl font-bold text-green-600">{{ formatNumber(stats.certificates.activeCertificates) }}</div>
+            </div>
+            <div class="border-l-4 border-orange-500 pl-4">
+              <div class="text-sm text-gray-600">Suspendues</div>
+              <div class="text-2xl font-bold text-orange-600">{{ formatNumber(stats.certificates.suspendedCertificates) }}</div>
+            </div>
+            <div class="border-l-4 border-red-500 pl-4">
+              <div class="text-sm text-gray-600">Annulées</div>
+              <div class="text-2xl font-bold text-red-600">{{ formatNumber(stats.certificates.cancelledCertificates) }}</div>
+            </div>
+          </div>
+          <div class="mt-6 pt-6 border-t">
+            <div class="flex justify-between items-center">
+              <div class="text-sm text-gray-600">Expirent dans 30 jours</div>
+              <div class="text-xl font-bold text-yellow-600">{{ formatNumber(stats.certificates.expiringIn30Days) }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Top Distributors -->
+    <section *ngIf="stats.distributors.topDistributors.length > 0">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">🏆 Top 10 Distributeurs</h2>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rang</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Polices</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Prime Totale</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Commission</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let distributor of stats.distributors.topDistributors; let i = index" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-2xl font-bold" [ngClass]="{
+                  'text-yellow-500': i === 0,
+                  'text-gray-400': i === 1,
+                  'text-orange-600': i === 2,
+                  'text-gray-600': i > 2
+                }">{{ i + 1 }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ distributor.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ distributor.type }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ formatNumber(distributor.policiesCount) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">{{ formatCurrency(distributor.totalPremium) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-green-600">{{ formatCurrency(distributor.totalCommission) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</div>

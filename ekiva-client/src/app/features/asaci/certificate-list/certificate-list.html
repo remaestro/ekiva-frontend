@@ -1,0 +1,223 @@
+<div class="certificate-list-container">
+  <!-- En-tête -->
+  <div class="page-header">
+    <h1>Gestion des Attestations ASACI</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="exportToExcel()">
+        <i class="icon-download"></i> Exporter
+      </button>
+      <button class="btn btn-success" routerLink="/asaci/create">
+        <i class="icon-plus"></i> Nouvelle Attestation
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total</div>
+      <div class="stat-value">{{ stats.total }}</div>
+    </div>
+    <div class="stat-card stat-active">
+      <div class="stat-label">Actives</div>
+      <div class="stat-value">{{ stats.active }}</div>
+    </div>
+    <div class="stat-card stat-suspended">
+      <div class="stat-label">Suspendues</div>
+      <div class="stat-value">{{ stats.suspended }}</div>
+    </div>
+    <div class="stat-card stat-cancelled">
+      <div class="stat-label">Annulées</div>
+      <div class="stat-value">{{ stats.cancelled }}</div>
+    </div>
+    <div class="stat-card stat-expired">
+      <div class="stat-label">Expirées</div>
+      <div class="stat-value">{{ stats.expired }}</div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="search">Rechercher</label>
+        <input
+          type="text"
+          id="search"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          placeholder="Numéro, entreprise, IFU..."
+          class="form-control"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="status">Statut</label>
+        <select
+          id="status"
+          [(ngModel)]="selectedStatus"
+          (ngModelChange)="onStatusChange()"
+          class="form-control"
+        >
+          <option value="">Tous les statuts</option>
+          <option [value]="CertificateStatus.Active">Active</option>
+          <option [value]="CertificateStatus.Suspended">Suspendue</option>
+          <option [value]="CertificateStatus.Cancelled">Annulée</option>
+          <option [value]="CertificateStatus.Expired">Expirée</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="dateFrom">Date de début</label>
+        <input
+          type="date"
+          id="dateFrom"
+          [(ngModel)]="dateFrom"
+          (ngModelChange)="onDateChange()"
+          class="form-control"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="dateTo">Date de fin</label>
+        <input
+          type="date"
+          id="dateTo"
+          [(ngModel)]="dateTo"
+          (ngModelChange)="onDateChange()"
+          class="form-control"
+        />
+      </div>
+
+      <div class="filter-group">
+        <button class="btn btn-secondary" (click)="resetFilters()">
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Chargement des attestations...</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="error-message">
+    <i class="icon-alert"></i>
+    {{ error }}
+  </div>
+
+  <!-- Table des attestations -->
+  <div *ngIf="!isLoading && !error" class="table-container">
+    <table class="certificates-table">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Titulaire</th>
+          <th>Immatriculation</th>
+          <th>Date d'émission</th>
+          <th>Date d'expiration</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cert of paginatedCertificates">
+          <td>
+            <strong>{{ cert.certificateNumber }}</strong>
+          </td>
+          <td>{{ cert.policyHolderName }}</td>
+          <td>{{ cert.vehicleRegistration }}</td>
+          <td>{{ cert.issuedDate | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <span [class.expired]="isExpired(cert.expiryDate)">
+              {{ cert.expiryDate | date: 'dd/MM/yyyy' }}
+            </span>
+            <span *ngIf="!isExpired(cert.expiryDate) && getDaysUntilExpiry(cert.expiryDate) <= 30" class="expiry-warning">
+              ({{ getDaysUntilExpiry(cert.expiryDate) }} jours)
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(cert.status)">
+              {{ getStatusLabel(cert.status) }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <div class="actions-dropdown">
+              <button class="btn-icon" title="Voir">
+                <i class="icon-eye" (click)="viewCertificate(cert)"></i>
+              </button>
+              <button class="btn-icon" title="Modifier" *ngIf="cert.status === CertificateStatus.Active">
+                <i class="icon-edit" (click)="editCertificate(cert)"></i>
+              </button>
+              <button class="btn-icon" title="Télécharger">
+                <i class="icon-download" (click)="downloadCertificate(cert)"></i>
+              </button>
+              
+              <button 
+                class="btn-icon" 
+                title="Suspendre" 
+                *ngIf="cert.status === CertificateStatus.Active"
+                (click)="suspendCertificate(cert)">
+                <i class="icon-pause"></i>
+              </button>
+              
+              <button 
+                class="btn-icon" 
+                title="Réactiver" 
+                *ngIf="cert.status === CertificateStatus.Suspended"
+                (click)="reactivateCertificate(cert)">
+                <i class="icon-play"></i>
+              </button>
+              
+              <button 
+                class="btn-icon btn-danger" 
+                title="Annuler" 
+                *ngIf="cert.status === CertificateStatus.Active || cert.status === CertificateStatus.Suspended"
+                (click)="cancelCertificate(cert)">
+                <i class="icon-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Message si aucune attestation -->
+    <div *ngIf="paginatedCertificates.length === 0" class="no-data">
+      <i class="icon-inbox"></i>
+      <p>Aucune attestation trouvée</p>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && !error && totalPages > 1" class="pagination">
+    <button 
+      class="btn-page" 
+      (click)="previousPage()" 
+      [disabled]="currentPage === 1">
+      Précédent
+    </button>
+
+    <button
+      *ngFor="let page of getPageNumbers()"
+      class="btn-page"
+      [class.active]="page === currentPage"
+      (click)="goToPage(page)">
+      {{ page }}
+    </button>
+
+    <button 
+      class="btn-page" 
+      (click)="nextPage()" 
+      [disabled]="currentPage === totalPages">
+      Suivant
+    </button>
+
+    <div class="pagination-info">
+      Page {{ currentPage }} sur {{ totalPages }} ({{ filteredCertificates.length }} attestations)
+    </div>
+  </div>
+</div>

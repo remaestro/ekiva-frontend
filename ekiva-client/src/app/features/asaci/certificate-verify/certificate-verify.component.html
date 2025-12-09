@@ -1,0 +1,158 @@
+<div class="certificate-verify-container">
+  <div class="verify-card">
+    <!-- Header -->
+    <div class="card-header">
+      <h2 class="title">Vérification d'Attestation ASACI</h2>
+      <p class="subtitle">Vérifiez la validité de votre attestation d'assurance automobile</p>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="verifyCertificate()" class="verify-form">
+      <div class="form-group">
+        <label for="certificateNumber" class="form-label">
+          Numéro d'attestation <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          id="certificateNumber"
+          [(ngModel)]="certificateNumber"
+          name="certificateNumber"
+          class="form-input"
+          placeholder="Ex: ASACI-2025-00000001"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="vehicleRegistration" class="form-label">
+          Immatriculation du véhicule (optionnel)
+        </label>
+        <input
+          type="text"
+          id="vehicleRegistration"
+          [(ngModel)]="vehicleRegistration"
+          name="vehicleRegistration"
+          class="form-input"
+          placeholder="Ex: CI 1234 AB"
+        />
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading"
+        >
+          <span *ngIf="!isLoading">Vérifier</span>
+          <span *ngIf="isLoading" class="loading-spinner">
+            <i class="spinner"></i> Vérification en cours...
+          </span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="reset()"
+          [disabled]="isLoading"
+        >
+          Réinitialiser
+        </button>
+      </div>
+    </form>
+
+    <!-- Verification Result -->
+    <div *ngIf="verificationResult" class="result-section" [ngClass]="getStatusColor()">
+      <div class="result-header">
+        <span class="status-icon">{{ getStatusIcon() }}</span>
+        <h3 class="result-title">
+          {{ verificationResult.isValid ? 'Attestation Valide' : 'Attestation Non Valide' }}
+        </h3>
+      </div>
+
+      <div class="result-message">
+        <p>{{ verificationResult.statusMessage }}</p>
+      </div>
+
+      <!-- Certificate Details -->
+      <div *ngIf="verificationResult.certificate" class="certificate-details">
+        <h4 class="details-title">Détails de l'attestation</h4>
+        
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Numéro:</span>
+            <span class="detail-value">{{ verificationResult.certificate.certificateNumber }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Statut:</span>
+            <span class="detail-value badge" [ngClass]="'badge-' + verificationResult.certificate.status.toLowerCase()">
+              {{ verificationResult.certificate.status }}
+            </span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Assuré:</span>
+            <span class="detail-value">{{ verificationResult.certificate.policyHolderName }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Véhicule:</span>
+            <span class="detail-value">
+              {{ verificationResult.certificate.vehicleMake }} {{ verificationResult.certificate.vehicleModel }}
+            </span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Immatriculation:</span>
+            <span class="detail-value">{{ verificationResult.certificate.vehicleRegistration }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Type de couverture:</span>
+            <span class="detail-value">{{ verificationResult.certificate.coverageType }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Date d'effet:</span>
+            <span class="detail-value">{{ verificationResult.certificate.effectiveDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Date d'expiration:</span>
+            <span class="detail-value">{{ verificationResult.certificate.expiryDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Compagnie:</span>
+            <span class="detail-value">{{ verificationResult.certificate.insuranceCompanyName }}</span>
+          </div>
+
+          <div class="detail-item" *ngIf="verificationResult.certificate.isValid">
+            <span class="detail-label">Jours restants:</span>
+            <span class="detail-value">{{ verificationResult.certificate.daysUntilExpiry }} jours</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="info-section">
+    <h3 class="info-title">À propos de la vérification ASACI</h3>
+    <p class="info-text">
+      L'ASACI (Association des Sociétés d'Assurances de Côte d'Ivoire) centralise toutes les attestations 
+      d'assurance automobile. Cette vérification vous permet de confirmer l'authenticité et la validité 
+      d'une attestation d'assurance.
+    </p>
+    <ul class="info-list">
+      <li>Vérification instantanée</li>
+      <li>Données à jour en temps réel</li>
+      <li>Service gratuit et accessible à tous</li>
+    </ul>
+  </div>
+</div>

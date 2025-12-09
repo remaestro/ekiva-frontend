@@ -1,0 +1,7 @@
+:host {
+  display: block;
+}
+
+tbody tr:nth-child(even).bg-gray-50 {
+  background-color: #f9fafb;
+}

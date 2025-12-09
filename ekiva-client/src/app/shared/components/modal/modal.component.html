@@ -1,0 +1,47 @@
+<!-- Modal Backdrop -->
+<div 
+  *ngIf="isOpen"
+  class="fixed inset-0 bg-black bg-opacity-50 z-[1040] flex items-center justify-center p-4 transition-opacity duration-300"
+  (click)="onBackdropClick()">
+  
+  <!-- Modal Content -->
+  <div 
+    [class]="'bg-white rounded-lg shadow-2xl w-full transform transition-all duration-300 ' + modalSizeClasses"
+    (click)="stopPropagation($event)">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h3 class="text-xl font-semibold text-gray-900">{{ title }}</h3>
+      <button 
+        *ngIf="showCloseButton"
+        (click)="close()"
+        class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 max-h-[60vh] overflow-y-auto">
+      <ng-content></ng-content>
+    </div>
+
+    <!-- Modal Footer -->
+    <div *ngIf="showFooter" class="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+      <ng-content select="[footer]"></ng-content>
+      <app-button 
+        *ngIf="cancelText"
+        variant="secondary" 
+        (clicked)="onCancel()">
+        {{ cancelText }}
+      </app-button>
+      <app-button 
+        *ngIf="confirmText"
+        [variant]="confirmVariant" 
+        (clicked)="onConfirm()">
+        {{ confirmText }}
+      </app-button>
+    </div>
+  </div>
+</div>

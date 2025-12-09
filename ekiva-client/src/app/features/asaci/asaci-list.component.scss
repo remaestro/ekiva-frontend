@@ -1,0 +1,15 @@
+// Custom styles for ASACI list component
+.container {
+  max-width: 1400px;
+}
+
+table {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}

@@ -1,0 +1,8 @@
+button {
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  &:disabled {
+    pointer-events: none;
+  }
+}
